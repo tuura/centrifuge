@@ -7,17 +7,15 @@
 --
 -----------------------------------------------------------------------------
 
-module Cruncher.VHDL.PrettyPrinter (writeGraphVhdl) where
+module Cruncher.VHDL.PrettyPrinter (generateGraphVHDL) where
 
 import qualified Algebra.Graph         as G
 import qualified Data.ByteString       as BS
 import qualified Data.ByteString.Char8 as BSC8 (pack, unpack)
 import Data.Monoid ((<>))
 
-import Cruncher.Types
-
-writeGraphVhdl :: G.Graph Protein -> BS.ByteString
-writeGraphVhdl g =
+generateGraphVHDL :: (Ord a, Show a) => G.Graph a -> BS.ByteString
+generateGraphVHDL g =
   let vertexCount = G.vertexCount g
       stats = "-- Nodes: " <> (BSC8.pack . show $ vertexCount) <>
               " - Edges: " <> (BSC8.pack . show . G.edgeCount $ g) <> "\n"
@@ -92,13 +90,13 @@ createSignals vertexCount =
   where
     threshold = BSC8.pack . show $ vertexCount - 1
 
-bindRegisters :: [Protein] -> Int -> BS.ByteString
+bindRegisters :: Show a => [a] -> Int -> BS.ByteString
 bindRegisters [] _     = "\n"
 bindRegisters (n:ns) i = bindRegister n i <> bindRegisters ns (i+1)
 
-bindRegister :: Protein -> Int -> BS.ByteString
+bindRegister :: Show a => a -> Int -> BS.ByteString
 bindRegister name i =
-     "\tREG_" <> name <> " : ffd PORT MAP (\n"
+     "\tREG_" <> (BSC8.pack . show $ name) <> " : ffd PORT MAP (\n"
   <> "\t\tCLK\t=>\tCLK,\n"
   <> "\t\tRST\t=>\tRST,\n"
   <> "\t\tEN\t=>\tEN(" <> (BSC8.pack $ show i) <> "),\n"
@@ -113,13 +111,13 @@ bindWiresOut n =
   where
     nStr = BSC8.pack . show $ n
 
-bindWiresIn :: G.Graph Protein -> BS.ByteString
+bindWiresIn :: (Ord a, Show a) => G.Graph a -> BS.ByteString
 bindWiresIn g =
   let vertices = G.vertexList g
       edges    = G.edgeList g
   in getStructure vertices vertices edges
 
-getStructure :: [Protein] -> [Protein] -> [(Protein, Protein)] -> BS.ByteString
+getStructure :: (Eq a, Show a) => [a] -> [a] -> [(a, a)] -> BS.ByteString
 getStructure []     _     es = "\n"
 getStructure (n:ns) nodes es =
      "\tdata_in(" <> (BSC8.pack $ show i) <>
@@ -134,14 +132,14 @@ getInput []       = ";\n"
 getInput (ni:nis) =
   "\n\t\t\tOR data_out(" <> (BSC8.pack $ show ni) <> ")" <> getInput nis
 
-getIndex :: Protein -> [Protein] -> Int -> Int
+getIndex :: (Eq a, Show a) => a -> [a] -> Int -> Int
 getIndex nn [] _ =
-  error $ "Node " ++ BSC8.unpack nn ++ " is not present in the graph"
+  error $ "Node " ++ show nn ++ " is not present in the graph"
 getIndex n1 (n2:ns) i
     | n1 == n2  = i
     | otherwise = getIndex n1 ns (i + 1)
 
-getConnections :: Protein -> [Protein] -> [(Protein, Protein)] -> [Int]
+getConnections :: (Eq a, Show a) => a -> [a] -> [(a, a)] -> [Int]
 getConnections _ _ []         = []
 getConnections name ns ((source, target):es)
     | name == source = getIndex target ns 0 : getConnections name ns es
