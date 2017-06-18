@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, TypeFamilies #-}
 
 module Cruncher.GraphML.Parser (parseGraphML) where
 
@@ -13,7 +13,8 @@ import Data.List (partition)
 import Cruncher.Types
 
 -- | Parse GraphML file into a polymorphic graph expression
-parseGraphML :: (H.Graph g) => BS.ByteString -> Either BS.ByteString (g Protein)
+parseGraphML :: (C.Graph g, C.Vertex g ~ Protein) =>
+                GraphMLSource -> Either BS.ByteString g
 parseGraphML input = do
   -- retrieve xml root node
   tree <- XML.parse input
@@ -26,7 +27,7 @@ parseGraphML input = do
   vertices <- traverse extractVertex rawVertices
   edges    <- traverse extractEdge rawEdges
   -- construct the resulting graph
-  return $ H.overlay (H.vertices vertices) (H.edges edges)
+  return $ C.overlay (C.vertices vertices) (C.edges edges)
   where
     extractGraphNode :: XML.Node -> Either BS.ByteString XML.Node
     extractGraphNode root =

@@ -14,6 +14,7 @@ import qualified Data.ByteString       as BS
 import qualified Data.ByteString.Char8 as BSC8 (pack, unpack)
 import Data.Monoid ((<>))
 
+-- | Synthesise a graph into a hardware circuit
 generateGraphVHDL :: (Ord a, Show a) => G.Graph a -> BS.ByteString
 generateGraphVHDL g =
   let vertexCount = G.vertexCount g

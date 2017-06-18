@@ -1,7 +1,15 @@
-module Cruncher.Types (Protein, Netlist) where
+{-# LANGUAGE RankNTypes, TypeFamilies #-}
 
-import qualified Data.ByteString as BS
+module Cruncher.Types (GraphMLSource, Protein, Network) where
 
+import qualified Algebra.Graph       as G
+import qualified Data.ByteString     as BS
+
+-- | GraphML source file
+type GraphMLSource = BS.ByteString
+
+-- | Proteins
 type Protein = BS.ByteString
 
-type Netlist = BS.ByteString
+-- | Protein network
+type Network = G.Graph Protein

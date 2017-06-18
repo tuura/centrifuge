@@ -1,19 +1,37 @@
 name:                graph-cruncher
-version:             0.1.0.0
+version:             0.0.1
 description:         Please see README.md
 homepage:            https://github.com/tuura/graph-cruncher#readme
-license:             BSD3
+license:             MIT
 license-file:        LICENSE
-author:              Georgy Lukyanov
-maintainer:          georgiylukjanov@gmail.com
+author:              Georgy Lukyanov <georgiylukjanov@gmail.com>, github: @geo2a
+maintainer:          Georgy Lukyanov <georgiylukjanov@gmail.com>, github: @geo2a
 copyright:           2017 Georgy Lukyanov
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
+tested-with:         GHC==8.0.2
+stability:           experimental
+
+description:
+
+  An experimental graph parsing, manipulation and transformation library based on
+  <http://hackage.haskell.org/package/algebraic-graphs/docs/Algebra-Graph.html Algebraic graphs>
+  .
+  This code is meant to be an accompanying material for 'Embedding Graphs in Silicon' FDL'17 paper.
+  .
+  VHDL code generation is a port of a corresponding <https://github.com/tuura/pangraph/tree/master/src/Pangraph/VHDL pangraph> module.
+  .
+  The <Cruncher.DSL> module provides a DSL for protein network import, transformation and FPGA embedding.
+  .
+  The <Cruncher.GraphML.Parse> lets to parse GraphML files into polymorphic algebraic graph expressions.
+  .
+  The <Cruncher.VHDL.PrettyPrinter> provide a VHDL code generator for algebraic graph expressions.
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Cruncher.Types,
+  exposed-modules:     Cruncher.DSL,
+                       Cruncher.Types,
                        Cruncher.GraphML.Parser,
                        Cruncher.VHDL.PrettyPrinter
   build-depends:       base >= 4.7 && < 5
@@ -22,14 +40,6 @@ library
                      , algebraic-graphs
   default-language:    Haskell2010
 
-executable graph-cruncher-exe
-  hs-source-dirs:      src
-  main-is:             Main.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  build-depends:       base
-                     , graph-cruncher
-  default-language:    Haskell2010
-
 source-repository head
   type:     git
-  location: https://github.com/githubuser/graph-cruncher
+  location: https://github.com/tuura/graph-cruncher

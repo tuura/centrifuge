@@ -5,12 +5,12 @@ An experimental graph parsing, manipulation and transformation library based on
 
 ## Features
 
-* Import undirected graphs from GraphML files
-* Manipulate and transform polymorphic graph expressions with magnificent `Alga` library
-* Generate VHDL descriptions of graph circuits
+* The `Cruncher.DSL` module provides a DSL for protein network import, transformation and FPGA embedding.
+* The `Cruncher.GraphML.Parse` lets to parse GraphML files into polymorphic algebraic graph expressions.
+* The `Cruncher.VHDL.PrettyPrinter` provide a VHDL-code generator for algebraic graph expressions.
 
-## Description
+## More info
 
-This code is meant to be an accompanying material for 'Embedding Graphs in Silicon' FDL'17 paper.
+This repo is meant to be an accompanying material for 'Embedding Graphs in Silicon' FDL'17 paper.
 
 VHDL code generation is a port of a corresponding [pangraph](https://github.com/tuura/pangraph/tree/master/src/Pangraph/VHDL) module.
