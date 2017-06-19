@@ -10,11 +10,9 @@ import qualified Algebra.Graph                    as G
 
 import Data.List (partition)
 
-import Cruncher.Types
-
 -- | Parse GraphML file into a polymorphic graph expression
-parseGraphML :: (C.Graph g, C.Vertex g ~ Protein) =>
-                GraphMLSource -> Either BS.ByteString g
+parseGraphML :: (C.Graph g, C.Vertex g ~ BS.ByteString) =>
+                BS.ByteString -> Either BS.ByteString g
 parseGraphML input = do
   -- retrieve xml root node
   tree <- XML.parse input
@@ -37,14 +35,15 @@ parseGraphML input = do
           [] -> Left "Invalid GraphML: no 'graph' tag"
           x:_ -> Right x
 
-    extractVertex :: XML.Node -> Either BS.ByteString Protein
+    extractVertex :: XML.Node -> Either BS.ByteString BS.ByteString
     extractVertex node =
       case XML.attributeValue <$> XML.attributeBy node "id" of
         Nothing -> Left "Invalid GraphML: a vertex doesn't have an 'id' \
                         \ attribute"
         Just n  -> Right n
 
-    extractEdge :: XML.Node -> Either BS.ByteString (Protein, Protein)
+    extractEdge :: XML.Node ->
+                   Either BS.ByteString (BS.ByteString, BS.ByteString)
     extractEdge node =
       case sequence . map (fmap XML.attributeValue . XML.attributeBy node) $
                       ["source", "target"] of

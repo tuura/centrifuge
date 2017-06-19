@@ -22,7 +22,7 @@ description:
   .
   VHDL code generation is a port of a corresponding <https://github.com/tuura/pangraph/tree/master/src/Pangraph/VHDL pangraph> module.
   .
-  The <Cruncher.DSL> module provides a DSL for protein network import, transformation and FPGA embedding.
+  The <Cruncher.Protein> module provides a DSL for protein network import, transformation and FPGA embedding.
   .
   The <Cruncher.GraphML.Parse> lets to parse GraphML files into polymorphic algebraic graph expressions.
   .
@@ -30,8 +30,7 @@ description:
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Cruncher.DSL,
-                       Cruncher.Types,
+  exposed-modules:     Cruncher.Protein,
                        Cruncher.GraphML.Parser,
                        Cruncher.VHDL.PrettyPrinter
   build-depends:       base >= 4.7 && < 5

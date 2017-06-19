@@ -3,15 +3,26 @@
 An experimental graph parsing, manipulation and transformation library based on
 [Algebraic graphs](http://hackage.haskell.org/package/algebraic-graphs/docs/Algebra-Graph.html)
 
-## Features
+## The ``Protein'' domain-specific language
 
-* The `Cruncher.DSL` module provides a DSL for protein network import, transformation and FPGA embedding.
-* The `Cruncher.GraphML.Parse` lets to parse GraphML files into polymorphic algebraic graph expressions.
-* The `Cruncher.VHDL.PrettyPrinter` provide a VHDL-code generator for algebraic graph expressions.
+The ``Protein'' DSL is a modelling tool for protein networks.
 
-## Example GHCi session
+### Features
 
-Enable OverloadedStrings extension for ByteString literals
+* Import protein networks from GraphML files with `readGraphML` function.
+* Split, merge or remove vertices.
+* Induce subnetworks.
+* Generate VHDL circuit descriptions for simulation.
+
+### Try ``Protein'' interactively  in GHCi
+
+Run GHCi with stack:
+
+```
+> stack ghci
+```
+
+Enable the `OverloadedStrings` extension to use `ByteString` literals
 
 ```
 > :set -XOverloadedStrings
