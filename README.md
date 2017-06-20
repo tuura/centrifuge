@@ -3,9 +3,9 @@
 An experimental graph parsing, manipulation and transformation library based on
 [Algebraic graphs](http://hackage.haskell.org/package/algebraic-graphs/docs/Algebra-Graph.html)
 
-## The ``Protein'' domain-specific language
+## The "Protein" domain-specific language
 
-The ``Protein'' DSL is a modelling tool for protein networks.
+The "Protein" DSL is a modelling tool for protein networks.
 
 ### Features
 
@@ -14,7 +14,7 @@ The ``Protein'' DSL is a modelling tool for protein networks.
 * Induce subnetworks.
 * Generate VHDL circuit descriptions for simulation.
 
-### Try ``Protein'' interactively  in GHCi
+### Try "Protein" interactively  in GHCi
 
 Run GHCi with stack:
 
@@ -70,4 +70,3 @@ VHDL outout
 This repo is meant to be an accompanying material for 'Embedding Graphs in Silicon' FDL'17 paper.
 
 VHDL code generation is a port of a corresponding [pangraph](https://github.com/tuura/pangraph/tree/master/src/Pangraph/VHDL) module.
-
