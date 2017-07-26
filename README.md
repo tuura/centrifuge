@@ -69,4 +69,4 @@ This repo is meant to be an accompanying material for "Language and Hardware Acc
 VHDL code generation is a port of a corresponding [pangraph](https://github.com/tuura/pangraph/tree/master/src/Pangraph/VHDL) module.
 
 Graph manipulation and transformation are performed be means of
-[Algebraic graphs](http://hackage.haskell.org/package/algebraic-graphs/docs/Algebra-Graph.html)
+[Algebraic graphs](http://hackage.haskell.org/package/algebraic-graphs/docs/Algebra-Graph.html).
