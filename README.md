@@ -64,7 +64,7 @@ VHDL outout
 
 ## More info
 
-This repo is meant to be an accompanying material for 'Embedding Graphs in Silicon' FDL'17 paper.
+This repo is meant to be an accompanying material for "Language and Hardware Acceleration Backend for Graph Processing" FDL'17 paper.
 
 VHDL code generation is a port of a corresponding [pangraph](https://github.com/tuura/pangraph/tree/master/src/Pangraph/VHDL) module.
 
