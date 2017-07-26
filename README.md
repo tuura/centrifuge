@@ -1,20 +1,17 @@
-# Graph Cruncher
+# Centrifuge
 
-An experimental graph parsing, manipulation and transformation library based on
-[Algebraic graphs](http://hackage.haskell.org/package/algebraic-graphs/docs/Algebra-Graph.html)
+> Let's put these networks through our centrifuge? Sure, will do!
 
-## The "Protein" domain-specific language
+The "Centrifuge" DSL is a modelling tool for protein networks.
 
-The "Protein" DSL is a modelling tool for protein networks.
-
-### Features
+## Features
 
 * Import protein networks from GraphML files with `readGraphML` function.
 * Split, merge or remove vertices.
 * Induce subnetworks.
 * Generate VHDL circuit descriptions for simulation.
 
-### Try "Protein" interactively  in GHCi
+## Try "Centrifuge" interactively  in GHCi
 
 Run GHCi with stack:
 
@@ -70,3 +67,6 @@ VHDL outout
 This repo is meant to be an accompanying material for 'Embedding Graphs in Silicon' FDL'17 paper.
 
 VHDL code generation is a port of a corresponding [pangraph](https://github.com/tuura/pangraph/tree/master/src/Pangraph/VHDL) module.
+
+Graph manipulation and transformation are performed be means of
+[Algebraic graphs](http://hackage.haskell.org/package/algebraic-graphs/docs/Algebra-Graph.html)

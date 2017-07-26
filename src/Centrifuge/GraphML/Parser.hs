@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, TypeFamilies #-}
 
-module Cruncher.GraphML.Parser (parseGraphML) where
+module Centrifuge.GraphML.Parser (parseGraphML) where
 
 import qualified Data.ByteString                  as BS
 import qualified Text.XML.Hexml                   as XML

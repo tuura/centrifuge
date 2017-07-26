@@ -7,7 +7,7 @@
 --
 -----------------------------------------------------------------------------
 
-module Cruncher.VHDL.PrettyPrinter (generateGraphVHDL) where
+module Centrifuge.VHDL.PrettyPrinter (generateGraphVHDL) where
 
 import qualified Algebra.Graph         as G
 import qualified Data.ByteString       as BS

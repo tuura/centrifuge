@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 -- |
--- Module     : Cruncher.Protein
+-- Module     : Centrifuge.DSL
 -- Copyright  : (c) Georgy Lukyanov 2017
 -- License    : MIT (see the file LICENSE)
 -- Maintainer : georgiylukjanov@gmail.com
@@ -15,7 +15,7 @@
            , ScopedTypeVariables #-}
 
 
-module Cruncher.Protein
+module Centrifuge.DSL
   ( readGraphML
   , print
   , mergeVertices
@@ -33,8 +33,8 @@ import qualified Algebra.Graph                    as G
 import qualified Algebra.Graph.Class              as C
 import qualified Algebra.Graph.HigherKinded.Class as H
 import qualified Algebra.Graph.AdjacencyMap       as AM
-import Cruncher.GraphML.Parser (parseGraphML)
-import Cruncher.VHDL.PrettyPrinter (generateGraphVHDL)
+import Centrifuge.GraphML.Parser (parseGraphML)
+import Centrifuge.VHDL.PrettyPrinter (generateGraphVHDL)
 
 -- | Proteins
 type Protein = BS.ByteString

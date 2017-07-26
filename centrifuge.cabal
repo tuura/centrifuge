@@ -1,7 +1,7 @@
-name:                graph-cruncher
+name:                centrifuge
 version:             0.0.1
 description:         Please see README.md
-homepage:            https://github.com/tuura/graph-cruncher#readme
+homepage:            https://github.com/tuura/centrifuge#readme
 license:             MIT
 license-file:        LICENSE
 author:              Georgy Lukyanov <georgiylukjanov@gmail.com>, github: @geo2a
@@ -22,17 +22,17 @@ description:
   .
   VHDL code generation is a port of a corresponding <https://github.com/tuura/pangraph/tree/master/src/Pangraph/VHDL pangraph> module.
   .
-  The <Cruncher.Protein> module provides a DSL for protein network import, transformation and FPGA embedding.
+  The <Centrifuge.DSL> module provides a DSL for protein network import, transformation and FPGA embedding.
   .
-  The <Cruncher.GraphML.Parse> lets to parse GraphML files into polymorphic algebraic graph expressions.
+  The <Centrifuge.GraphML.Parse> lets to parse GraphML files into polymorphic algebraic graph expressions.
   .
-  The <Cruncher.VHDL.PrettyPrinter> provide a VHDL code generator for algebraic graph expressions.
+  The <Centrifuge.VHDL.PrettyPrinter> provide a VHDL code generator for algebraic graph expressions.
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Cruncher.Protein,
-                       Cruncher.GraphML.Parser,
-                       Cruncher.VHDL.PrettyPrinter
+  exposed-modules:     Centrifuge.DSL,
+                       Centrifuge.GraphML.Parser,
+                       Centrifuge.VHDL.PrettyPrinter
   build-depends:       base >= 4.7 && < 5
                      , bytestring
                      , hexml
@@ -41,4 +41,4 @@ library
 
 source-repository head
   type:     git
-  location: https://github.com/tuura/graph-cruncher
+  location: https://github.com/tuura/centrifuge
