@@ -30,7 +30,8 @@ description:
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Centrifuge.DSL,
+  exposed-modules:     Centrifuge.DSL.Generic,
+                       Centrifuge.DSL.Protein, 
                        Centrifuge.GraphML.Parser,
                        Centrifuge.VHDL.PrettyPrinter
   build-depends:       base >= 4.7 && < 5
