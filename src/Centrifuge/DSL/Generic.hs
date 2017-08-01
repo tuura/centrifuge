@@ -55,13 +55,20 @@ instance C.ToGraph (Network a) where
   type ToVertex (Network a) = a
   toGraph (Network g) = G.foldg C.empty C.vertex C.overlay C.connect g
 
--- | Read and parse a GraphML file describing a network
+-- | Read and parse a GraphML file describing a network leaving nodes unparsed.
 readRawNetwork :: FilePath -> IO RawNetwork
 readRawNetwork path = do
   input <- BS.readFile path
   case parseGraphML input of
     Left err -> error (BSC8.unpack err)
     Right graph -> return $ graph
+
+-- | Read and parse a GraphML file describing a network, parse node values using
+--   a supplied function.
+readNetwork :: (BS.ByteString -> a) -> FilePath -> IO (Network a)
+readNetwork nodeParser path = do
+  raw <- readRawNetwork path
+  return $ nodeParser <$> raw
 
 -- | Print a network
 printRawNetwork :: RawNetwork -> IO ()
