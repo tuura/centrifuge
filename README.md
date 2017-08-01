@@ -2,16 +2,18 @@
 
 > Let's put these networks through our centrifuge? Sure, will do!
 
-The "Centrifuge" DSL is a modelling tool for protein networks.
+The "Centrifuge" DSL is a modelling tool for networks.
 
 ## Features
 
-* Import protein networks from GraphML files with `readGraphML` function.
+* Import networks from GraphML files with `readNetwork` function. Supply a parser function for network nodes.
 * Split, merge or remove vertices.
 * Induce subnetworks.
 * Generate VHDL circuit descriptions for simulation.
 
 ## Try "Centrifuge" interactively  in GHCi
+
+Module `Centrifuge.DSL.Protein` contains a trivial instantiation of the "Centrifuge" DSL tied up to protein networks (valuable for drug discovery). Here is an example session.
 
 Run GHCi with stack:
 
@@ -28,7 +30,7 @@ Enable the `OverloadedStrings` extension to use `ByteString` literals
 Import the network from GraphML file
 
 ```
-> g1 <- readGraphML "examples/graphs/fdl_17.graphml"
+> g1 <- readProteinNetwork "examples/graphs/fdl_17.graphml"
 > print g1
 [("A","B"), ("B","C"), ("B","D"), ("C","E"), ("D","E")]
 ```
