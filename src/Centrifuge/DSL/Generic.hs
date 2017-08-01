@@ -14,10 +14,15 @@
            , DeriveFunctor, DeriveFoldable, DeriveTraversable
            , ScopedTypeVariables #-}
 
+module Centrifuge.DSL.Generic
+  ( Network
+  , readNetwork
+  , print
+  , mergeVertices
+  , splitVertex
+  , induce
+  ) where
 
-module Centrifuge.DSL.Generic where
-
--- import Prelude hiding (print)
 import Data.Foldable (elem)
 import Control.Applicative (Alternative)
 import Control.Monad (MonadPlus)
@@ -69,11 +74,6 @@ readNetwork :: (BS.ByteString -> a) -> FilePath -> IO (Network a)
 readNetwork nodeParser path = do
   raw <- readRawNetwork path
   return $ nodeParser <$> raw
-
--- | Print a network
-printRawNetwork :: RawNetwork -> IO ()
-printRawNetwork g = putStrLn . show $
-  (C.toGraph g :: AM.AdjacencyMap BS.ByteString)
 
 -- | Merge a list of proteins into a single protein complex
 mergeVertices :: Eq a => [a] -> a -> (Network a) -> (Network a)
