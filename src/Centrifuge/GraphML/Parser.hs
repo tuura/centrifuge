@@ -2,6 +2,7 @@
 
 module Centrifuge.GraphML.Parser (parseGraphML) where
 
+import Data.Monoid ((<>))
 import qualified Data.ByteString                  as BS
 import qualified Text.XML.Hexml                   as XML
 import qualified Algebra.Graph.Class              as C
@@ -38,8 +39,8 @@ parseGraphML input = do
     extractVertex :: XML.Node -> Either BS.ByteString BS.ByteString
     extractVertex node =
       case XML.attributeValue <$> XML.attributeBy node "id" of
-        Nothing -> Left "Invalid GraphML: a vertex doesn't have an 'id' \
-                        \ attribute"
+        Nothing -> Left $ "Invalid GraphML: a vertex doesn't have an 'id'"
+                       <> "attribute"
         Just n  -> Right n
 
     extractEdge :: XML.Node ->

@@ -12,11 +12,13 @@
 
 {-# LANGUAGE RankNTypes, TypeFamilies, GeneralizedNewtypeDeriving
            , DeriveFunctor, DeriveFoldable, DeriveTraversable
-           , ScopedTypeVariables #-}
+           , ScopedTypeVariables, DeriveDataTypeable #-}
 
 module Centrifuge.DSL.Generic
-  ( Network
+  ( Network (fromNetwork)
+  , RawNetwork
   , readNetwork
+  , readRawNetwork
   , print
   , mergeVertices
   , splitVertex
@@ -26,6 +28,7 @@ module Centrifuge.DSL.Generic
 import Data.Foldable (elem)
 import Control.Applicative (Alternative)
 import Control.Monad (MonadPlus)
+import Data.Typeable (Typeable)
 import qualified Data.ByteString                  as BS
 import qualified Data.ByteString.Char8            as BSC8 (unpack)
 import qualified Algebra.Graph                    as G
@@ -33,12 +36,12 @@ import qualified Algebra.Graph.Class              as C
 import qualified Algebra.Graph.HigherKinded.Class as H
 import qualified Algebra.Graph.AdjacencyMap       as AM
 import Centrifuge.GraphML.Parser (parseGraphML)
-import Centrifuge.VHDL.PrettyPrinter (generateGraphVHDL)
+-- import Centrifuge.VHDL.PrettyPrinter (generateGraphVHDL)
 
 -- | A network
 newtype Network a = Network { fromNetwork :: G.Graph a }
   deriving ( Foldable, Applicative, Alternative
-           , Monad, MonadPlus, Functor, Traversable
+           , Monad, MonadPlus, Functor, Traversable, Typeable
            , H.Graph, H.ToGraph)
 
 instance (Show a, Ord a) => Show (Network a) where
@@ -89,5 +92,5 @@ induce = H.induce
 
 -- | Synthesise a network into a hardware circuit,
 --   write the result to a VHDL file
-writeVHDL :: (Ord a, Show a) => Network a -> FilePath -> IO ()
-writeVHDL g path = BS.writeFile path $ generateGraphVHDL (fromNetwork g)
+-- writeVHDL :: (Ord a, Show a) => Network a -> FilePath -> IO ()
+-- writeVHDL g path = BS.writeFile path $ generateGraphVHDL (fromNetwork g)

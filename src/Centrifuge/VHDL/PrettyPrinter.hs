@@ -38,10 +38,10 @@ generateGraphVHDL g =
        <> archClose
 
 createLibrary :: BS.ByteString
-createLibrary = "-- File generated automatically\n\
-                \LIBRARY ieee;\n\
-                \USE ieee.std_logic_1164.all;\n\n\
-                \LIBRARY work;\n\n"
+createLibrary = "-- File generated automatically\n"
+             <> "LIBRARY ieee;\n"
+             <> "USE ieee.std_logic_1164.all;\n\n"
+             <> "LIBRARY work;\n\n"
 
 createEntity :: Int -> BS.ByteString
 createEntity vertexCount =
