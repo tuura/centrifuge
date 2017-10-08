@@ -9,6 +9,7 @@ module Main where
 
 import System.IO
 import System.IO.Unsafe
+import System.Random
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.List as L
 import qualified Data.Map as Map
@@ -78,9 +79,10 @@ instance Eq Module where
 instance Show Module where
   show x = show . moduleId $ x
 
+getModule :: Int -> Module
 getModule i = Module { moduleId = i
-                 , x = 10 * i - i
-                 , y = 5 * i + i
+                 , x = unsafePerformIO $ randomInt
+                 , y = unsafePerformIO $ randomInt
                  , description = "Graph Module"
                  , cssClass = "Module"
                  , cssClasses = ["graph", "hide-label"]
@@ -89,6 +91,9 @@ getModule i = Module { moduleId = i
                  , height = 20
                  , ports = [(10, 10)]
                  }
+  where
+    randomInt :: IO Int
+    randomInt = fst . randomR (-500,500) <$> newStdGen
 
 data Connection = Connection { moduleXId :: String
                              , moduleYId :: String
@@ -177,7 +182,8 @@ main = do
     Left err -> print err
     Right () -> return ()
 
-dispatch :: (I.MonadInterpreter m) => Map.Map String String -> m LBSC8.ByteString
+dispatch :: (I.MonadInterpreter m) => Map.Map String String ->
+                                      m LBSC8.ByteString
 dispatch (Map.lookup "get" -> Just "engine_name") =
   pure . JSON.encode $ JSON.object [ "result" .= JSON.String "success"
                                    , "return" .= JSON.String "Graphs"
@@ -185,7 +191,7 @@ dispatch (Map.lookup "get" -> Just "engine_name") =
 dispatch (Map.lookup "eval" -> Just "model = init()") =
   pure . JSON.encode $ JSON.object [ "result" .= JSON.String "success"
                                    , "return" .= JSON.String ""
-                                   , "state" .= ex 'e']
+                                   , "state" .= ex 'a']
 dispatch (Map.lookup "eval" -> Just expr) =
   handleAll (\e -> pure $ encodeException e) $
     case classifyInput expr of

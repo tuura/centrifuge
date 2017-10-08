@@ -43,7 +43,7 @@ library
 executable repl-backend
   hs-source-dirs: src/Centrifuge/REPL
   main-is:           Main.hs
-  ghc-options:       -threaded -rtsopts -with-rtsopts=-N
+  ghc-options:       -O0 -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , hint
                      , haskeline
@@ -55,6 +55,7 @@ executable repl-backend
                      , algebraic-graphs
                      , exceptions
                      , centrifuge
+                     , random
                      -- , centrifuge-repl
                      -- , exceptions
                      -- , containers
