@@ -19,6 +19,7 @@ import Data.Aeson ((.=))
 import Data.Monoid ((<>))
 
 import Algebra.Graph.Class
+import Algebra.Graph (edgeList)
 import qualified Data.List as L
 import qualified Data.Text as Text
 import qualified Data.ByteString.Lazy as LBS
@@ -38,8 +39,8 @@ data ModelState = ModelState { modules     :: IntMap.IntMap Module
 instance JSON.ToJSON ModelState where
   toJSON (ModelState modules connections _) =
     JSON.object [ "modules" .= JSON.toJSON (map snd . IntMap.toList $ modules)
-           , "connections" .= JSON.toJSON connections
-           ]
+                , "connections" .= JSON.toJSON connections
+                ]
 
 data Module = Module { moduleId :: Int
                      , x :: Int
@@ -106,19 +107,18 @@ instance Eq Connection where
 instance Show Connection where
   show c = show (moduleXId c, moduleYId c)
 
-mkConnection :: Module -> Module -> Connection
-mkConnection x y = Connection { moduleXId = "n" <> (show $ moduleId x :: String)
-                              , moduleYId = "n" <> (show $ moduleId y :: String)
+mkConnection :: Int -> Int -> Connection
+mkConnection x y = Connection { moduleXId = "n" <> (show $ x :: String)
+                              , moduleYId = "n" <> (show $ y :: String)
                               , portX = "p"
                               , portY = "p"
                               , connectionCssClasses = ["graph-connection"]
                               }
 
-mkConnections :: IntMap.IntMap Module -> IntMap.IntMap Module -> [Connection]
+mkConnections :: [Int] -> [Int] -> [Connection]
 mkConnections vertices1 vertices2 =
-  IntMap.foldl (\acc v ->
-    (map snd $ IntMap.toList $
-      IntMap.map (mkConnection v) vertices2) ++ acc) [] vertices1
+  foldl (\acc v ->
+    map (mkConnection v) vertices2 ++ acc) [] vertices1
 
 instance Graph ModelState where
   type Vertex ModelState = Module
@@ -133,7 +133,10 @@ instance Graph ModelState where
           (ModelState modulesY connectionsY _) =
     ModelState (IntMap.union modulesX modulesY)
                (L.union (L.union connectionsX connectionsY)
-                         (mkConnections modulesX modulesY))
+                        (mkConnections (map snd . IntMap.toList $
+                                          IntMap.map moduleId modulesX)
+                                       (map snd . IntMap.toList $
+                                          IntMap.map moduleId modulesY)))
                True
 
 instance ToGraph ModelState where
@@ -243,20 +246,25 @@ classifyInput statement =
      | L.isInfixOf "render" statement -> Render
      | otherwise -> Expression
 
-renderNetwork :: Show a => Network a -> ModelState
+renderNetwork :: (Ord a, Show a) => Network a -> ModelState
 renderNetwork n =
   let modules = renderModule <$> n
-      connections = renderConnection <$> n
+      connections =
+        let es = edgeList . fromNetwork $ n
+        in  map renderConnection es
   -- in undefined
-  in ModelState (translate modules) [] True
+  in ModelState (translate modules) connections True
   where renderModule :: Show a => a -> Module
-        -- renderModule x = getModule (fromIntegral . BS.c2w . head . show $ x)
         renderModule x = getModule (parseId . show $ x)
-        -- renderModule x = undefined
-        renderConnection = undefined
+
+        renderConnection :: Show a => (a, a) -> Connection
+        renderConnection (x, y) = mkConnection (parseId $ show x)
+                                               (parseId $ show y)
 
         parseId :: String -> Int
         parseId = read . drop 1 . L.filter (/= '\"')
+
+
 
 translate :: Network Module -> IntMap.IntMap Module
 translate =
