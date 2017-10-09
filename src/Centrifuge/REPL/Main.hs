@@ -195,6 +195,15 @@ dispatch (Map.lookup "eval" -> Just "model = init()") =
 dispatch (Map.lookup "eval" -> Just expr) =
   handleAll (\e -> pure $ encodeException e) $
     case classifyInput expr of
+      Aux -> do
+        let command = head $ words expr
+            arg = dropWhile (/= ' ') expr
+        ret <- if | command == ":t" -> I.typeOf arg
+                  | otherwise -> pure "Invalid aux command"
+        pure . JSON.encode $
+          JSON.object [ "result" .= JSON.String "success"
+                      , "return" .= JSON.String (Text.pack ret)
+                      ]
       Statement  -> do
         I.runStmt expr
         pure . JSON.encode $ JSON.object [ "result" .= JSON.String "success"
@@ -209,11 +218,8 @@ dispatch (Map.lookup "eval" -> Just expr) =
                       ]
       Render -> do
         let ident = head . reverse . words $ expr
-        result <- I.interpret ident (I.as :: (RawNetwork))
+        result <- I.interpret ident (I.as :: (Network BS.ByteString))
         let state = renderNetwork result
-        -- result <- I.interpret "[1,2,3]" (I.as :: [Int])
-        -- result <- I.interpret "[\"abc\"]" (I.as :: ([String]))
-        -- result <- I.interpret "[\"cde\"]" (I.as :: ([LBS.ByteString]))
         pure . JSON.encode $
           JSON.object [ "result" .= JSON.String "success"
                       -- , "return" .= JSON.String (Text.pack . show . modules $ state)
@@ -238,7 +244,7 @@ exec :: String -> IO String
 exec statement = undefined
 
 -- | Statements return unit and modify the environment, expressions don't
-data InputType = Statement | Expression | Render
+data InputType = Statement | Expression | Render | Aux
   deriving (Show)
 
 -- | Check whether input is a statement or an expression
@@ -248,8 +254,8 @@ classifyInput statement =
   if | L.isInfixOf "<-" statement ||
        (L.isInfixOf "let" statement &&
         (not $ L.isInfixOf "in" statement)) -> Statement
-  -- otherwise it's an expression
      | L.isInfixOf "render" statement -> Render
+     | head statement == ':' -> Aux
      | otherwise -> Expression
 
 renderNetwork :: (Ord a, Show a) => Network a -> ModelState
@@ -261,14 +267,14 @@ renderNetwork n =
   -- in undefined
   in ModelState (translate modules) connections True
   where renderModule :: Show a => a -> Module
-        renderModule x = getModule (parseId . show $ x)
+        renderModule x = getModule (parseId $ x)
 
         renderConnection :: Show a => (a, a) -> Connection
-        renderConnection (x, y) = mkConnection (parseId $ show x)
-                                               (parseId $ show y)
+        renderConnection (x, y) = mkConnection (parseId $ x)
+                                               (parseId $ y)
 
-        parseId :: String -> Int
-        parseId = read . drop 1 . L.filter (/= '\"')
+        parseId :: Show a => a -> Int
+        parseId = read . drop 1 . L.filter (/= '\"') . show
 
 
 
@@ -284,5 +290,13 @@ translate =
 
 loadDependencies :: I.MonadInterpreter m => m ()
 loadDependencies = do
-  I.set [(I.:=) I.languageExtensions [I.OverloadedStrings]]
-  I.setImports ["Prelude", "Centrifuge.DSL.Generic", "Data.ByteString"]
+  I.set [(I.:=) I.languageExtensions [ I.OverloadedStrings
+                                     , I.ScopedTypeVariables
+                                     ]
+        ]
+  I.setImportsQ [ ("Data.ByteString", Nothing)
+                , ("Data.ByteString.Internal", Nothing)
+                , ("Prelude", Nothing)
+                , ("Centrifuge.DSL.Generic", Nothing)
+                , ("Data.Monoid", Nothing)
+                ]
