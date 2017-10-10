@@ -1,9 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
+
+{-# LANGUAGE UndecidableInstances #-}
 
 module Main where
 
@@ -11,6 +17,7 @@ import System.IO
 import System.IO.Unsafe
 import System.Random
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.State
 import qualified Data.List as L
 import qualified Data.Map as Map
 import qualified Data.IntMap as IntMap
@@ -79,21 +86,18 @@ instance Eq Module where
 instance Show Module where
   show x = show . moduleId $ x
 
-getModule :: Int -> Module
-getModule i = Module { moduleId = i
-                 , x = unsafePerformIO $ randomInt
-                 , y = unsafePerformIO $ randomInt
-                 , description = "Graph Module"
-                 , cssClass = "Module"
-                 , cssClasses = ["graph", "hide-label"]
-                 , borderRadius = 10
-                 , width = 20
-                 , height = 20
-                 , ports = [(10, 10)]
-                 }
-  where
-    randomInt :: IO Int
-    randomInt = fst . randomR (-500,500) <$> newStdGen
+mkModule :: (Int, Int) -> Int -> Module
+mkModule (x, y) i = Module { moduleId = i
+                           , x = x -- unsafePerformIO $ randomInt
+                           , y = y -- unsafePerformIO $ randomInt
+                           , description = "Graph Module"
+                           , cssClass = "Module"
+                           , cssClasses = ["graph", "hide-label"]
+                           , borderRadius = 10
+                           , width = 20
+                           , height = 20
+                           , ports = [(10, 10)]
+                           }
 
 data Connection = Connection { moduleXId :: String
                              , moduleYId :: String
@@ -155,18 +159,31 @@ instance ToGraph ModelState where
               y = read . drop 1 $ yId
           in (ms ! x, ms ! y)
 
-ex :: Char -> ModelState
-ex 'a' = overlay (vertex (getModule 1)) (vertex (getModule 2))
-ex 'b' = connect (vertex (getModule 1)) (vertex (getModule 2))
-ex 'c' = connect (vertex (getModule 1))
-                 (overlay (vertex (getModule 2)) (vertex (getModule 3)))
-ex 'd' = connect (vertex (getModule 1)) (vertex (getModule 1))
-ex 'e' = overlay (connect (vertex (getModule 1)) (vertex (getModule 2)))
-                 (connect (vertex (getModule 2)) (vertex (getModule 3)))
-ex _   = undefined
+-- ex :: Char -> ModelState
+-- ex 'a' = overlay (vertex (mkModule 1)) (vertex (mkModule 2))
+-- ex 'b' = connect (vertex (mkModule 1)) (vertex (mkModule 2))
+-- ex 'c' = connect (vertex (mkModule 1))
+--                  (overlay (vertex (mkModule 2)) (vertex (mkModule 3)))
+-- ex 'd' = connect (vertex (mkModule 1)) (vertex (mkModule 1))
+-- ex 'e' = overlay (connect (vertex (mkModule 1)) (vertex (mkModule 2)))
+--                  (connect (vertex (mkModule 2)) (vertex (mkModule 3)))
+-- ex _   = undefined
 
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
+
+--------------------------------------------------------------------------------
+
+instance MonadState s m => MonadState s (I.InterpreterT m) where
+  get = lift get
+  put = lift . put
+  state = lift . state
+
+newtype App a = App {runApp :: I.InterpreterT (StateT ModelState IO) a}
+  deriving ( Functor, Applicative, Monad
+           , MonadIO, MonadState ModelState
+           , MonadThrow, MonadCatch, MonadMask, I.MonadInterpreter
+           )
 
 --------------------------------------------------------------------------------
 
@@ -177,13 +194,23 @@ main :: IO ()
 main = do
   hSetBuffering stdin NoBuffering
   hSetBuffering stdout NoBuffering
-  r <- I.runInterpreter $ loadDependencies >> loop
+  r <- flip evalStateT (ModelState IntMap.empty [] True) . I.runInterpreter . runApp $ do
+    loadDependencies
+    I.eval "()"
+    loop
   case r of
     Left err -> print err
     Right () -> return ()
 
-dispatch :: (I.MonadInterpreter m) => Map.Map String String ->
-                                      m LBSC8.ByteString
+loop :: App ()
+loop = do
+  (Just request) <- decodeMessage =<< liftIO getLine
+  response <- dispatch request
+  liftIO . LBSC8.putStrLn $ response
+  loop
+
+dispatch :: (I.MonadInterpreter m, MonadState ModelState m) =>
+            Map.Map String String -> m LBSC8.ByteString
 dispatch (Map.lookup "get" -> Just "engine_name") =
   pure . JSON.encode $ JSON.object [ "result" .= JSON.String "success"
                                    , "return" .= JSON.String "Graphs"
@@ -191,7 +218,7 @@ dispatch (Map.lookup "get" -> Just "engine_name") =
 dispatch (Map.lookup "eval" -> Just "model = init()") =
   pure . JSON.encode $ JSON.object [ "result" .= JSON.String "success"
                                    , "return" .= JSON.String ""
-                                   , "state" .= ex 'a']
+                                   ]
 dispatch (Map.lookup "eval" -> Just expr) =
   handleAll (\e -> pure $ encodeException e) $
     case classifyInput expr of
@@ -211,34 +238,27 @@ dispatch (Map.lookup "eval" -> Just expr) =
                                          ]
       Expression -> do
         result <- I.eval expr
-        -- result <- I.interpret expr I.infer
         pure . JSON.encode $
           JSON.object [ "result" .= JSON.String "success"
                       , "return" .= JSON.String (Text.pack result)
                       ]
       Render -> do
+        state <- get
         let ident = head . reverse . words $ expr
         result <- I.interpret ident (I.as :: (Network BS.ByteString))
-        let state = renderNetwork result
+        let state' = updateModel state (renderNetwork result)
+        put state'
         pure . JSON.encode $
           JSON.object [ "result" .= JSON.String "success"
-                      -- , "return" .= JSON.String (Text.pack . show . modules $ state)
                       , "return" .= JSON.String (Text.pack . show $ result)
-                      , "state"  .= state
+                      , "state"  .= state'
                       ]
 
-encodeException :: SomeException -> LBSC8.ByteString -- JSON.Value
+encodeException :: SomeException -> LBSC8.ByteString
 encodeException e =
   JSON.encode $
     JSON.object [ "result" .= JSON.String "exception"
                 , "return" .= JSON.String (Text.pack . show $ e)]
-
-loop :: I.MonadInterpreter m => m ()
-loop = do
-  (Just request) <- decodeMessage =<< liftIO getLine
-  response <- dispatch request
-  liftIO . LBSC8.putStrLn $ response
-  loop
 
 exec :: String -> IO String
 exec statement = undefined
@@ -267,7 +287,9 @@ renderNetwork n =
   -- in undefined
   in ModelState (translate modules) connections True
   where renderModule :: Show a => a -> Module
-        renderModule x = getModule (parseId $ x)
+        renderModule x = mkModule ( (unsafePerformIO randomInt)
+                                  , (unsafePerformIO randomInt))
+                                  (parseId $ x)
 
         renderConnection :: Show a => (a, a) -> Connection
         renderConnection (x, y) = mkConnection (parseId $ x)
@@ -276,17 +298,34 @@ renderNetwork n =
         parseId :: Show a => a -> Int
         parseId = read . drop 1 . L.filter (/= '\"') . show
 
+updateModel :: ModelState -> ModelState -> ModelState
+updateModel old@ModelState { modules = oldModules
+                           , connections = oldConnections
+                           }
+            new@ModelState { modules = newModules
+                           , connections = newConnections
+                           } =
+  let -- commonModuleIDs = map moduleId $
+        -- IntMap.intersection oldModules' newModules
+      oldModules' = IntMap.intersection oldModules newModules
+      newModules' = IntMap.difference newModules oldModules
 
+      oldConnections' = L.intersect oldConnections newConnections
+      newConnections' = (L.\\) newConnections oldConnections
+  in ModelState
+      (IntMap.union oldModules' newModules')
+      (L.union oldConnections' newConnections') True
+
+--------------------------------------------------------------------------------
+
+randomInt :: IO Int
+randomInt = fst . randomR (-500,500) <$> newStdGen
 
 translate :: Network Module -> IntMap.IntMap Module
 translate =
   foldl (\acc m -> IntMap.insert (moduleId m) m acc) IntMap.empty
-  -- IntMap.unions . traverse (\m -> IntMap.singleton (moduleId m) m)
 
--- | Check if a statement contains a readRawNetwork function
--- detectNetworkParsing :: String -> Bool
--- detectNetworkParsing str = L.isInfixOf "readRawNetwork" statement
-
+--------------------------------------------------------------------------------
 
 loadDependencies :: I.MonadInterpreter m => m ()
 loadDependencies = do
