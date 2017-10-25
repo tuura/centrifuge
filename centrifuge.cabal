@@ -6,7 +6,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Georgy Lukyanov <georgiylukjanov@gmail.com>, github: @geo2a
 maintainer:          Georgy Lukyanov <georgiylukjanov@gmail.com>, github: @geo2a
-copyright:           2017 Georgy Lukyanov
+copyright:           2017 Tuura
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
